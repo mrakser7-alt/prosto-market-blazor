@@ -18,7 +18,8 @@
                 <form @onsubmit="AddProductAsync" @onsubmit:preventDefault>
                     <label>Название<input required @bind="newProduct.Name" /></label>
                     <label>Категория<input required @bind="newProduct.Category" /></label>
-                    <div class="form-row"><label>Цена<input required min="1" type="number" step="1" @bind="newProduct.Price" /></label><label>Иконка<input required maxlength="4" @bind="newProduct.Emoji" /></label></div>
+                    <label>Цена<input required min="1" type="number" step="1" @bind="newProduct.Price" /></label>
+                    <label>Ссылка на фото<input required type="url" placeholder="https://..." @bind="newProduct.ImageUrl" /></label>
                     <label>Описание<textarea required rows="3" @bind="newProduct.Description"></textarea></label>
                     <label class="check-label"><input type="checkbox" @bind="newProduct.IsNew" /> Отметить как новинку</label>
                     <button class="button button-full" type="submit">Добавить товар</button>
@@ -29,7 +30,7 @@
                 <div class="admin-products">
                     @foreach (var product in AppState.Products)
                     {
-                        <div class="admin-product"><span class="admin-product-icon">@product.Emoji</span><div><strong>@product.Name</strong><small>@product.Category · @product.Price.ToString("N0") ₽</small></div><button type="button" aria-label="Удалить @product.Name" @onclick="() => DeleteProductAsync(product.Id)">Удалить</button></div>
+                        <div class="admin-product"><span class="admin-product-icon"><img src="@product.ImageUrl" alt="" /></span><div><strong>@product.Name</strong><small>@product.Category · @product.Price.ToString("N0") ₽</small></div><button type="button" aria-label="Удалить @product.Name" @onclick="() => DeleteProductAsync(product.Id)">Удалить</button></div>
                     }
                 </div>
             </div>
@@ -46,5 +47,5 @@
         newProduct = EmptyProduct();
     }
     private Task DeleteProductAsync(int id) => AppState.DeleteProductAsync(id);
-    private static Product EmptyProduct() => new() { Emoji = "📦" };
+    private static Product EmptyProduct() => new() { ImageUrl = "images/hero-box.jpg", ImageAlt = "Фото товара" };
 }

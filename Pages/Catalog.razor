@@ -29,7 +29,7 @@
                     <article class="product-card">
                         <div class="product-picture">
                             @if (product.IsNew) { <span class="badge">Новинка</span> }
-                            <span>@product.Emoji</span>
+                            <img src="@product.ImageUrl" alt="@product.ImageAlt" loading="lazy" />
                         </div>
                         <div class="product-body">
                             <span class="product-category">@product.Category</span><h2>@product.Name</h2><p>@product.Description</p>

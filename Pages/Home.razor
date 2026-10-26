@@ -12,7 +12,7 @@
                 <p>@slides[currentSlide].Text</p>
                 <a class="button" href="catalog">Перейти в каталог</a>
             </div>
-            <div class="slider-art" aria-hidden="true">@slides[currentSlide].Emoji</div>
+            <div class="slider-photo"><img src="@slides[currentSlide].ImageUrl" alt="@slides[currentSlide].ImageAlt" /></div>
             <button class="slider-arrow slider-arrow-left" type="button" aria-label="Предыдущий слайд" @onclick="PreviousSlide">←</button>
             <button class="slider-arrow slider-arrow-right" type="button" aria-label="Следующий слайд" @onclick="NextSlide">→</button>
             <div class="slider-dots" aria-label="Выбор слайда">
@@ -45,7 +45,7 @@
                 <article class="product-card">
                     <div class="product-picture">
                         @if (product.IsNew) { <span class="badge">Новинка</span> }
-                        <span>@product.Emoji</span>
+                        <img src="@product.ImageUrl" alt="@product.ImageAlt" loading="lazy" />
                     </div>
                     <div class="product-body">
                         <span class="product-category">@product.Category</span>
@@ -69,11 +69,11 @@
     private int currentSlide;
     private readonly Slide[] slides =
     [
-        new("Новая коллекция", "Простые вещи для уютного дома", "Небольшая подборка предметов, которыми приятно пользоваться каждый день.", "🪴"),
-        new("Для рабочего стола", "Порядок помогает сосредоточиться", "Лаконичные аксессуары для спокойной и продуктивной работы.", "✏️"),
-        new("Практичный выбор", "Берите нужное, пропускайте лишнее", "Понятный каталог, короткие описания и никаких сложных шагов.", "📦")
+        new("Новая коллекция", "Простые вещи для уютного дома", "Небольшая подборка предметов, которыми приятно пользоваться каждый день.", "images/hero-home.jpg", "Светлая уютная гостиная"),
+        new("Для рабочего стола", "Порядок помогает сосредоточиться", "Лаконичные аксессуары для спокойной и продуктивной работы.", "images/hero-work.jpg", "Современное рабочее место с монитором"),
+        new("Практичный выбор", "Берите нужное, пропускайте лишнее", "Понятный каталог, короткие описания и никаких сложных шагов.", "images/hero-box.jpg", "Открытая картонная коробка")
     ];
     private void PreviousSlide() => currentSlide = (currentSlide - 1 + slides.Length) % slides.Length;
     private void NextSlide() => currentSlide = (currentSlide + 1) % slides.Length;
-    private record Slide(string Label, string Title, string Text, string Emoji);
+    private record Slide(string Label, string Title, string Text, string ImageUrl, string ImageAlt);
 }

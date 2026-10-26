@@ -23,6 +23,7 @@ public class AppState(IJSRuntime js)
         if (initialized) return;
 
         Products = await ReadAsync<List<Product>>(ProductsKey) ?? SeedProducts();
+        NormalizeProductImages();
         users = await ReadAsync<List<UserAccount>>(UsersKey) ??
         [
             new UserAccount
@@ -119,11 +120,38 @@ public class AppState(IJSRuntime js)
 
     private static List<Product> SeedProducts() =>
     [
-        new() { Id = 1, Name = "Настольная лампа", Category = "Для дома", Price = 2490, Emoji = "💡", Description = "Мягкий свет и три уровня яркости.", IsNew = true },
-        new() { Id = 2, Name = "Керамическая кружка", Category = "Посуда", Price = 790, Emoji = "☕", Description = "Удобная кружка объёмом 350 мл." },
-        new() { Id = 3, Name = "Ежедневник", Category = "Канцелярия", Price = 1190, Emoji = "📓", Description = "Недатированный ежедневник на 160 страниц." },
-        new() { Id = 4, Name = "Термобутылка", Category = "Посуда", Price = 1790, Emoji = "🧴", Description = "Сохраняет температуру напитка до 8 часов.", IsNew = true },
-        new() { Id = 5, Name = "Органайзер", Category = "Для дома", Price = 990, Emoji = "🗄️", Description = "Компактное хранение мелочей на рабочем столе." },
-        new() { Id = 6, Name = "Беспроводная мышь", Category = "Техника", Price = 2290, Emoji = "🖱️", Description = "Тихие клавиши и до 12 месяцев работы." }
+        new() { Id = 1, Name = "Настольная лампа", Category = "Для дома", Price = 2490, ImageUrl = "images/lamp.jpg", ImageAlt = "Настольная лампа на рабочем столе", Description = "Мягкий свет и три уровня яркости.", IsNew = true },
+        new() { Id = 2, Name = "Керамическая кружка", Category = "Посуда", Price = 790, ImageUrl = "images/mug.jpg", ImageAlt = "Керамическая кружка на светлом столе", Description = "Удобная кружка объёмом 350 мл." },
+        new() { Id = 3, Name = "Ежедневник", Category = "Канцелярия", Price = 1190, ImageUrl = "images/notebook.jpg", ImageAlt = "Открытый ежедневник рядом с кружкой", Description = "Недатированный ежедневник на 160 страниц." },
+        new() { Id = 4, Name = "Термобутылка", Category = "Посуда", Price = 1790, ImageUrl = "images/bottle.jpg", ImageAlt = "Белая термобутылка на рабочем столе", Description = "Сохраняет температуру напитка до 8 часов.", IsNew = true },
+        new() { Id = 5, Name = "Органайзер", Category = "Для дома", Price = 990, ImageUrl = "images/organizer.jpg", ImageAlt = "Организованный рабочий стол с канцелярией", Description = "Компактное хранение мелочей на рабочем столе." },
+        new() { Id = 6, Name = "Беспроводная мышь", Category = "Техника", Price = 2290, ImageUrl = "images/mouse.jpg", ImageAlt = "Беспроводная мышь рядом с ноутбуком", Description = "Тихие клавиши и до 12 месяцев работы." }
     ];
+
+    private void NormalizeProductImages()
+    {
+        var images = new Dictionary<string, (string Url, string Alt)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Настольная лампа"] = ("images/lamp.jpg", "Настольная лампа на рабочем столе"),
+            ["Керамическая кружка"] = ("images/mug.jpg", "Керамическая кружка на светлом столе"),
+            ["Ежедневник"] = ("images/notebook.jpg", "Открытый ежедневник рядом с кружкой"),
+            ["Термобутылка"] = ("images/bottle.jpg", "Белая термобутылка на рабочем столе"),
+            ["Органайзер"] = ("images/organizer.jpg", "Рабочий стол с канцелярией"),
+            ["Беспроводная мышь"] = ("images/mouse.jpg", "Беспроводная мышь рядом с ноутбуком")
+        };
+
+        foreach (var product in Products)
+        {
+            if (images.TryGetValue(product.Name, out var image))
+            {
+                product.ImageUrl = image.Url;
+                product.ImageAlt = image.Alt;
+            }
+            else if (string.IsNullOrWhiteSpace(product.ImageUrl))
+            {
+                product.ImageUrl = "images/hero-box.jpg";
+                product.ImageAlt = "Фото товара";
+            }
+        }
+    }
 }
