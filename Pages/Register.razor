@@ -14,7 +14,7 @@
         <button class="button button-full" type="submit">Зарегистрироваться</button>
     </form>
     <p class="auth-switch">Уже есть аккаунт? <a href="login">Войти</a></p>
-    <p class="demo-note">Демо-версия: данные хранятся только в этом браузере.</p>
+    <p class="demo-note">@(AppState.UsesDatabase ? "Аккаунт будет сохранён в общей базе PostgreSQL." : "Локальный режим: данные хранятся только в этом браузере.")</p>
 </div></section>
 
 @code {

@@ -13,7 +13,10 @@
         <button class="button button-full" type="submit">Войти</button>
     </form>
     <p class="auth-switch">Нет аккаунта? <a href="register">Зарегистрироваться</a></p>
-    <div class="admin-hint"><strong>Демо-доступ в админку</strong><span>admin@catalog.ru / admin123</span></div>
+    @if (!AppState.UsesDatabase)
+    {
+        <div class="admin-hint"><strong>Демо-доступ в админку</strong><span>admin@catalog.ru / admin123</span></div>
+    }
 </div></section>
 
 @code {

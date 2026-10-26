@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject AppState AppState
 
 <div class="site-shell">
     <NavMenu />
@@ -19,7 +20,7 @@
                 <a href="register">Регистрация</a>
                 <a href="https://unsplash.com" target="_blank" rel="noopener">Фото: Unsplash</a>
             </div>
-            <p class="copyright">© @DateTime.Now.Year ПростоМаркет</p>
+            <p class="copyright">© @DateTime.Now.Year ПростоМаркет · @(AppState.UsesDatabase ? "База: Supabase PostgreSQL" : "Локальный режим")</p>
         </div>
     </footer>
 </div>

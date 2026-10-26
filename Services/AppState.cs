@@ -6,7 +6,7 @@ using SimpleCatalog.Models;
 
 namespace SimpleCatalog.Services;
 
-public class AppState(IJSRuntime js)
+public class AppState(IJSRuntime js, SupabaseService database)
 {
     // Имена ключей, под которыми данные сохраняются в localStorage браузера.
     private const string ProductsKey = "simple-catalog-products";
@@ -18,13 +18,24 @@ public class AppState(IJSRuntime js)
     public event Action? Changed;
     public List<Product> Products { get; private set; } = [];
     public UserAccount? CurrentUser { get; private set; }
+    public bool UsesDatabase => database.IsConfigured;
 
     public async Task InitializeAsync()
     {
         // Повторная инициализация не нужна при переходах между страницами.
         if (initialized) return;
 
-        // При первом запуске создаём стартовый каталог, при следующих — читаем сохранённый.
+        if (database.IsConfigured)
+        {
+            // В рабочем режиме каталог и профиль загружаются из Supabase PostgreSQL.
+            Products = await database.GetProductsAsync();
+            CurrentUser = await database.RestoreSessionAsync();
+            initialized = true;
+            Changed?.Invoke();
+            return;
+        }
+
+        // Локальный режим оставлен только для разработки до подключения Supabase.
         Products = await ReadAsync<List<Product>>(ProductsKey) ?? SeedProducts();
         NormalizeProductImages();
         users = await ReadAsync<List<UserAccount>>(UsersKey) ??
@@ -60,6 +71,17 @@ public class AppState(IJSRuntime js)
         if (name.Length < 2) return (false, "Введите имя не короче двух символов.");
         if (!email.Contains('@')) return (false, "Введите корректную почту.");
         if (password.Length < 6) return (false, "Пароль должен содержать минимум 6 символов.");
+
+        if (database.IsConfigured)
+        {
+            var result = await database.RegisterAsync(name, email, password);
+            if (!result.Success) return (false, result.Message);
+
+            CurrentUser = result.User;
+            Changed?.Invoke();
+            return (true, "Регистрация завершена.");
+        }
+
         if (users.Any(user => user.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
             return (false, "Пользователь с такой почтой уже зарегистрирован.");
 
@@ -75,6 +97,16 @@ public class AppState(IJSRuntime js)
     {
         await InitializeAsync();
 
+        if (database.IsConfigured)
+        {
+            var result = await database.LoginAsync(email.Trim(), password);
+            if (!result.Success) return (false, result.Message);
+
+            CurrentUser = result.User;
+            Changed?.Invoke();
+            return (true, "Вход выполнен.");
+        }
+
         // Пользователь считается найденным, если совпали почта и хеш пароля.
         var account = users.FirstOrDefault(user =>
             user.Email.Equals(email.Trim(), StringComparison.OrdinalIgnoreCase) &&
@@ -88,13 +120,26 @@ public class AppState(IJSRuntime js)
     public async Task LogoutAsync()
     {
         CurrentUser = null;
-        await js.InvokeVoidAsync("localStorage.removeItem", SessionKey);
+
+        if (database.IsConfigured)
+            await database.LogoutAsync();
+        else
+            await js.InvokeVoidAsync("localStorage.removeItem", SessionKey);
+
         Changed?.Invoke();
     }
 
     public async Task AddProductAsync(Product product)
     {
         await InitializeAsync();
+
+        if (database.IsConfigured)
+        {
+            await database.AddProductAsync(product);
+            Products = await database.GetProductsAsync();
+            Changed?.Invoke();
+            return;
+        }
 
         // Новый идентификатор берётся после максимального существующего ID.
         product.Id = Products.Count == 0 ? 1 : Products.Max(item => item.Id) + 1;
@@ -106,6 +151,15 @@ public class AppState(IJSRuntime js)
     public async Task DeleteProductAsync(int id)
     {
         await InitializeAsync();
+
+        if (database.IsConfigured)
+        {
+            await database.DeleteProductAsync(id);
+            Products = await database.GetProductsAsync();
+            Changed?.Invoke();
+            return;
+        }
+
         Products.RemoveAll(item => item.Id == id);
         await SaveAsync(ProductsKey, Products);
         Changed?.Invoke();
