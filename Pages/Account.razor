@@ -1,0 +1,32 @@
+@page "/account"
+@inject AppState AppState
+
+<PageTitle>Личный кабинет — ПростоМаркет</PageTitle>
+
+<section class="page-hero compact"><div class="container"><span class="eyebrow">Ваш профиль</span><h1>Личный кабинет</h1></div></section>
+
+<section class="section account-section"><div class="container">
+    @if (AppState.CurrentUser is null)
+    {
+        <div class="empty-state"><span>🔒</span><h2>Сначала войдите</h2><p>Личный кабинет доступен после авторизации.</p><a class="button" href="login">Перейти ко входу</a></div>
+    }
+    else
+    {
+        <div class="account-grid">
+            <aside class="profile-card">
+                <div class="profile-avatar">@AppState.CurrentUser.Name[..1].ToUpperInvariant()</div>
+                <h2>@AppState.CurrentUser.Name</h2><p>@AppState.CurrentUser.Email</p>
+                @if (AppState.CurrentUser.IsAdmin) { <span class="role-badge">Администратор</span> }
+            </aside>
+            <div class="account-content">
+                <h2>Добро пожаловать!</h2><p>Здесь будет отображаться ваша персональная информация и история действий.</p>
+                <div class="account-cards">
+                    <div><span>♡</span><strong>Избранное</strong><small>Пока пусто</small></div>
+                    <div><span>◷</span><strong>История</strong><small>Нет действий</small></div>
+                    <div><span>⚙</span><strong>Настройки</strong><small>Профиль активен</small></div>
+                </div>
+                @if (AppState.CurrentUser.IsAdmin) { <a class="button" href="admin">Открыть админку</a> }
+            </div>
+        </div>
+    }
+</div></section>

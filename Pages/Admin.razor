@@ -1,0 +1,50 @@
+@page "/admin"
+@inject AppState AppState
+
+<PageTitle>Админка — ПростоМаркет</PageTitle>
+
+<section class="page-hero compact"><div class="container"><span class="eyebrow">Управление</span><h1>Админка</h1></div></section>
+
+<section class="section admin-section"><div class="container">
+    @if (AppState.CurrentUser?.IsAdmin != true)
+    {
+        <div class="empty-state"><span>⛔</span><h2>Доступ закрыт</h2><p>Войдите под учётной записью администратора.</p><a class="button" href="login">Перейти ко входу</a></div>
+    }
+    else
+    {
+        <div class="admin-grid">
+            <div class="admin-form-card">
+                <h2>Добавить товар</h2>
+                <form @onsubmit="AddProductAsync" @onsubmit:preventDefault>
+                    <label>Название<input required @bind="newProduct.Name" /></label>
+                    <label>Категория<input required @bind="newProduct.Category" /></label>
+                    <div class="form-row"><label>Цена<input required min="1" type="number" step="1" @bind="newProduct.Price" /></label><label>Иконка<input required maxlength="4" @bind="newProduct.Emoji" /></label></div>
+                    <label>Описание<textarea required rows="3" @bind="newProduct.Description"></textarea></label>
+                    <label class="check-label"><input type="checkbox" @bind="newProduct.IsNew" /> Отметить как новинку</label>
+                    <button class="button button-full" type="submit">Добавить товар</button>
+                </form>
+            </div>
+            <div class="admin-list-card">
+                <div class="admin-list-heading"><h2>Товары</h2><span>@AppState.Products.Count поз.</span></div>
+                <div class="admin-products">
+                    @foreach (var product in AppState.Products)
+                    {
+                        <div class="admin-product"><span class="admin-product-icon">@product.Emoji</span><div><strong>@product.Name</strong><small>@product.Category · @product.Price.ToString("N0") ₽</small></div><button type="button" aria-label="Удалить @product.Name" @onclick="() => DeleteProductAsync(product.Id)">Удалить</button></div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div></section>
+
+@code {
+    private Product newProduct = EmptyProduct();
+    private async Task AddProductAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newProduct.Name) || string.IsNullOrWhiteSpace(newProduct.Category) || newProduct.Price <= 0) return;
+        await AppState.AddProductAsync(newProduct);
+        newProduct = EmptyProduct();
+    }
+    private Task DeleteProductAsync(int id) => AppState.DeleteProductAsync(id);
+    private static Product EmptyProduct() => new() { Emoji = "📦" };
+}

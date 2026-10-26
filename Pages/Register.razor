@@ -1,0 +1,32 @@
+@page "/register"
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+<PageTitle>Регистрация — ПростоМаркет</PageTitle>
+
+<section class="auth-section section"><div class="auth-card">
+    <span class="eyebrow">Новый аккаунт</span><h1>Регистрация</h1><p class="auth-lead">Создайте аккаунт, чтобы открыть личный кабинет.</p>
+    <form @onsubmit="RegisterAsync" @onsubmit:preventDefault>
+        <label>Имя<input required minlength="2" autocomplete="name" placeholder="Алексей" @bind="name" /></label>
+        <label>Электронная почта<input required type="email" autocomplete="email" placeholder="name@example.ru" @bind="email" /></label>
+        <label>Пароль<input required minlength="6" type="password" autocomplete="new-password" placeholder="Минимум 6 символов" @bind="password" /></label>
+        @if (!string.IsNullOrWhiteSpace(message)) { <div class="form-message error">@message</div> }
+        <button class="button button-full" type="submit">Зарегистрироваться</button>
+    </form>
+    <p class="auth-switch">Уже есть аккаунт? <a href="login">Войти</a></p>
+    <p class="demo-note">Демо-версия: данные хранятся только в этом браузере.</p>
+</div></section>
+
+@code {
+    private string name = string.Empty;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string message = string.Empty;
+
+    private async Task RegisterAsync()
+    {
+        var result = await AppState.RegisterAsync(name, email, password);
+        if (result.Success) Navigation.NavigateTo("account");
+        else message = result.Message;
+    }
+}

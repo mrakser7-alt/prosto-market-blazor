@@ -1,0 +1,53 @@
+@page "/catalog"
+@inject AppState AppState
+
+<PageTitle>Каталог — ПростоМаркет</PageTitle>
+
+<section class="page-hero"><div class="container"><span class="eyebrow">Все товары</span><h1>Каталог</h1><p>Небольшая подборка вещей для дома, работы и повседневных задач.</p></div></section>
+
+<section class="section catalog-section">
+    <div class="container">
+        <div class="catalog-tools">
+            <label class="search-box"><span>⌕</span><input type="search" placeholder="Найти товар" @bind="search" @bind:event="oninput" /></label>
+            <div class="category-list">
+                @foreach (var category in Categories)
+                {
+                    <button type="button" class="@(selectedCategory == category ? "active" : "")" @onclick="() => selectedCategory = category">@category</button>
+                }
+            </div>
+        </div>
+
+        @if (FilteredProducts.Count == 0)
+        {
+            <div class="empty-state"><span>🔎</span><h2>Ничего не найдено</h2><p>Попробуйте изменить запрос или выбрать другую категорию.</p></div>
+        }
+        else
+        {
+            <div class="product-grid">
+                @foreach (var product in FilteredProducts)
+                {
+                    <article class="product-card">
+                        <div class="product-picture">
+                            @if (product.IsNew) { <span class="badge">Новинка</span> }
+                            <span>@product.Emoji</span>
+                        </div>
+                        <div class="product-body">
+                            <span class="product-category">@product.Category</span><h2>@product.Name</h2><p>@product.Description</p>
+                            <div class="product-footer"><strong>@product.Price.ToString("N0") ₽</strong><button type="button" aria-label="Добавить в избранное">♡</button></div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private string search = string.Empty;
+    private string selectedCategory = "Все";
+    private List<string> Categories => ["Все", .. AppState.Products.Select(item => item.Category).Distinct().OrderBy(item => item)];
+    private List<Product> FilteredProducts => AppState.Products
+        .Where(item => selectedCategory == "Все" || item.Category == selectedCategory)
+        .Where(item => string.IsNullOrWhiteSpace(search) || item.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+}

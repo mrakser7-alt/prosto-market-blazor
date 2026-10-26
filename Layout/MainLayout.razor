@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+
+<div class="site-shell">
+    <NavMenu />
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>
+                <a class="footer-brand" href="">Просто<span>Маркет</span></a>
+                <p>Небольшой каталог полезных вещей для дома и работы.</p>
+            </div>
+            <div class="footer-links">
+                <a href="">Главная</a>
+                <a href="catalog">Каталог</a>
+                <a href="register">Регистрация</a>
+            </div>
+            <p class="copyright">© @DateTime.Now.Year ПростоМаркет</p>
+        </div>
+    </footer>
+</div>
+

@@ -1,0 +1,30 @@
+@page "/login"
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+<PageTitle>Вход — ПростоМаркет</PageTitle>
+
+<section class="auth-section section"><div class="auth-card">
+    <span class="eyebrow">С возвращением</span><h1>Вход</h1><p class="auth-lead">Введите почту и пароль от вашего аккаунта.</p>
+    <form @onsubmit="LoginAsync" @onsubmit:preventDefault>
+        <label>Электронная почта<input required type="email" autocomplete="email" placeholder="name@example.ru" @bind="email" /></label>
+        <label>Пароль<input required type="password" autocomplete="current-password" placeholder="Ваш пароль" @bind="password" /></label>
+        @if (!string.IsNullOrWhiteSpace(message)) { <div class="form-message error">@message</div> }
+        <button class="button button-full" type="submit">Войти</button>
+    </form>
+    <p class="auth-switch">Нет аккаунта? <a href="register">Зарегистрироваться</a></p>
+    <div class="admin-hint"><strong>Демо-доступ в админку</strong><span>admin@catalog.ru / admin123</span></div>
+</div></section>
+
+@code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string message = string.Empty;
+
+    private async Task LoginAsync()
+    {
+        var result = await AppState.LoginAsync(email, password);
+        if (result.Success) Navigation.NavigateTo(AppState.CurrentUser?.IsAdmin == true ? "admin" : "account");
+        else message = result.Message;
+    }
+}

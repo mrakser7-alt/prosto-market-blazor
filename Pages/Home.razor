@@ -1,0 +1,79 @@
+﻿@page "/"
+@inject AppState AppState
+
+<PageTitle>Главная — ПростоМаркет</PageTitle>
+
+<section class="hero section">
+    <div class="container">
+        <div class="slider-card">
+            <div class="slider-copy">
+                <span class="eyebrow">@slides[currentSlide].Label</span>
+                <h1>@slides[currentSlide].Title</h1>
+                <p>@slides[currentSlide].Text</p>
+                <a class="button" href="catalog">Перейти в каталог</a>
+            </div>
+            <div class="slider-art" aria-hidden="true">@slides[currentSlide].Emoji</div>
+            <button class="slider-arrow slider-arrow-left" type="button" aria-label="Предыдущий слайд" @onclick="PreviousSlide">←</button>
+            <button class="slider-arrow slider-arrow-right" type="button" aria-label="Следующий слайд" @onclick="NextSlide">→</button>
+            <div class="slider-dots" aria-label="Выбор слайда">
+                @for (var i = 0; i < slides.Length; i++)
+                {
+                    var slideIndex = i;
+                    <button type="button" class="@(i == currentSlide ? "active" : "")" aria-label="Слайд @(i + 1)" @onclick="() => currentSlide = slideIndex"></button>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section intro-section">
+    <div class="container intro-grid">
+        <div><span class="eyebrow">О магазине</span><h2>Полезные вещи без лишнего шума</h2></div>
+        <p>Мы собрали небольшой понятный каталог товаров для дома, работы и повседневных дел. Здесь легко найти нужное и не потеряться среди сотен позиций.</p>
+    </div>
+</section>
+
+<section class="section products-section">
+    <div class="container">
+        <div class="section-heading">
+            <div><span class="eyebrow">Популярное</span><h2>Выбор покупателей</h2></div>
+            <a class="arrow-link" href="catalog">Смотреть всё →</a>
+        </div>
+        <div class="product-grid product-grid-home">
+            @foreach (var product in AppState.Products.Take(3))
+            {
+                <article class="product-card">
+                    <div class="product-picture">
+                        @if (product.IsNew) { <span class="badge">Новинка</span> }
+                        <span>@product.Emoji</span>
+                    </div>
+                    <div class="product-body">
+                        <span class="product-category">@product.Category</span>
+                        <h3>@product.Name</h3><p>@product.Description</p><strong>@product.Price.ToString("N0") ₽</strong>
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section benefits-section">
+    <div class="container benefits-grid">
+        <div class="benefit"><span>✓</span><div><h3>Простой выбор</h3><p>Только полезные категории и понятные описания.</p></div></div>
+        <div class="benefit"><span>₽</span><div><h3>Честные цены</h3><p>Стоимость сразу указана в карточке товара.</p></div></div>
+        <div class="benefit"><span>♡</span><div><h3>С заботой</h3><p>Аккуратный сервис без навязчивых предложений.</p></div></div>
+    </div>
+</section>
+
+@code {
+    private int currentSlide;
+    private readonly Slide[] slides =
+    [
+        new("Новая коллекция", "Простые вещи для уютного дома", "Небольшая подборка предметов, которыми приятно пользоваться каждый день.", "🪴"),
+        new("Для рабочего стола", "Порядок помогает сосредоточиться", "Лаконичные аксессуары для спокойной и продуктивной работы.", "✏️"),
+        new("Практичный выбор", "Берите нужное, пропускайте лишнее", "Понятный каталог, короткие описания и никаких сложных шагов.", "📦")
+    ];
+    private void PreviousSlide() => currentSlide = (currentSlide - 1 + slides.Length) % slides.Length;
+    private void NextSlide() => currentSlide = (currentSlide + 1) % slides.Length;
+    private record Slide(string Label, string Title, string Text, string Emoji);
+}

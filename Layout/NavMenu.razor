@@ -1,0 +1,57 @@
+﻿@inject AppState AppState
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="">Просто<span>Маркет</span></a>
+
+        <button class="menu-button" type="button" aria-label="Открыть меню" @onclick="ToggleNavMenu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav class="main-nav @(menuOpen ? "is-open" : "")" @onclick="CloseMenu">
+            <NavLink href="" Match="NavLinkMatch.All">Главная</NavLink>
+            <NavLink href="catalog">Каталог</NavLink>
+            @if (AppState.CurrentUser?.IsAdmin == true)
+            {
+                <NavLink href="admin">Админка</NavLink>
+            }
+        </nav>
+
+        <div class="header-actions">
+            @if (AppState.CurrentUser is null)
+            {
+                <a class="text-link" href="login">Войти</a>
+                <a class="button button-small" href="register">Регистрация</a>
+            }
+            else
+            {
+                <a class="user-link" href="account" title="Личный кабинет">
+                    <span class="user-avatar">@AppState.CurrentUser.Name[..1].ToUpperInvariant()</span>
+                    <span>@AppState.CurrentUser.Name</span>
+                </a>
+                <button class="logout-button" type="button" @onclick="LogoutAsync">Выйти</button>
+            }
+        </div>
+    </div>
+</header>
+
+@code {
+    private bool menuOpen;
+
+    protected override void OnInitialized() => AppState.Changed += HandleStateChanged;
+
+    private void HandleStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void ToggleNavMenu() => menuOpen = !menuOpen;
+    private void CloseMenu() => menuOpen = false;
+
+    private async Task LogoutAsync()
+    {
+        await AppState.LogoutAsync();
+        Navigation.NavigateTo("");
+    }
+
+    public void Dispose() => AppState.Changed -= HandleStateChanged;
+}
