@@ -40,6 +40,7 @@
 @code {
     private bool menuOpen;
 
+    // Шапка подписана на AppState, чтобы сразу реагировать на вход и выход пользователя.
     protected override void OnInitialized() => AppState.Changed += HandleStateChanged;
 
     private void HandleStateChanged() => InvokeAsync(StateHasChanged);
@@ -49,9 +50,11 @@
 
     private async Task LogoutAsync()
     {
+        // Удаляем активную сессию и возвращаем пользователя на главную страницу.
         await AppState.LogoutAsync();
         Navigation.NavigateTo("");
     }
 
+    // При уничтожении компонента обязательно снимаем подписку на событие.
     public void Dispose() => AppState.Changed -= HandleStateChanged;
 }

@@ -6,6 +6,7 @@
 <section class="page-hero compact"><div class="container"><span class="eyebrow">Управление</span><h1>Админка</h1></div></section>
 
 <section class="section admin-section"><div class="container">
+    @* Интерфейс управления показывается только пользователю с флагом IsAdmin. *@
     @if (AppState.CurrentUser?.IsAdmin != true)
     {
         <div class="empty-state"><span>⛔</span><h2>Доступ закрыт</h2><p>Войдите под учётной записью администратора.</p><a class="button" href="login">Перейти ко входу</a></div>
@@ -15,6 +16,7 @@
         <div class="admin-grid">
             <div class="admin-form-card">
                 <h2>Добавить товар</h2>
+                @* preventDefault не даёт браузеру перезагрузить страницу после отправки формы. *@
                 <form @onsubmit="AddProductAsync" @onsubmit:preventDefault>
                     <label>Название<input required @bind="newProduct.Name" /></label>
                     <label>Категория<input required @bind="newProduct.Category" /></label>
@@ -39,11 +41,16 @@
 </div></section>
 
 @code {
+    // Отдельный объект используется как модель полей формы.
     private Product newProduct = EmptyProduct();
+
     private async Task AddProductAsync()
     {
+        // Дополнительная проверка защищает от пустого названия, категории и нулевой цены.
         if (string.IsNullOrWhiteSpace(newProduct.Name) || string.IsNullOrWhiteSpace(newProduct.Category) || newProduct.Price <= 0) return;
         await AppState.AddProductAsync(newProduct);
+
+        // После успешного добавления очищаем форму.
         newProduct = EmptyProduct();
     }
     private Task DeleteProductAsync(int id) => AppState.DeleteProductAsync(id);

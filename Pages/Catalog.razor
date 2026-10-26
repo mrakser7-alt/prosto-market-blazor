@@ -7,6 +7,7 @@
 
 <section class="section catalog-section">
     <div class="container">
+        @* Поиск реагирует сразу при вводе, без отдельной кнопки отправки. *@
         <div class="catalog-tools">
             <label class="search-box"><span>⌕</span><input type="search" placeholder="Найти товар" @bind="search" @bind:event="oninput" /></label>
             <div class="category-list">
@@ -43,9 +44,14 @@
 </section>
 
 @code {
+    // Эти поля меняются из элементов управления над каталогом.
     private string search = string.Empty;
     private string selectedCategory = "Все";
+
+    // Категории формируются автоматически из текущего списка товаров.
     private List<string> Categories => ["Все", .. AppState.Products.Select(item => item.Category).Distinct().OrderBy(item => item)];
+
+    // Сначала применяем категорию, затем — строку поиска без учёта регистра.
     private List<Product> FilteredProducts => AppState.Products
         .Where(item => selectedCategory == "Все" || item.Category == selectedCategory)
         .Where(item => string.IsNullOrWhiteSpace(search) || item.Name.Contains(search, StringComparison.OrdinalIgnoreCase))

@@ -23,7 +23,10 @@
 
     private async Task LoginAsync()
     {
+        // AppState сравнивает введённый пароль с сохранённым хешем.
         var result = await AppState.LoginAsync(email, password);
+
+        // Администратора отправляем в панель управления, остальных — в личный кабинет.
         if (result.Success) Navigation.NavigateTo(AppState.CurrentUser?.IsAdmin == true ? "admin" : "account");
         else message = result.Message;
     }

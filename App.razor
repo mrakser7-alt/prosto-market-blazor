@@ -1,5 +1,6 @@
 ﻿@inject AppState AppState
 
+@* Маршрутизация появляется только после чтения товаров и текущей сессии из браузера. *@
 @if (isReady)
 {
     <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
@@ -19,6 +20,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Загружаем данные один раз до показа первой страницы.
         await AppState.InitializeAsync();
         isReady = true;
     }

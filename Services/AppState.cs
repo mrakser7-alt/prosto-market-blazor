@@ -8,6 +8,7 @@ namespace SimpleCatalog.Services;
 
 public class AppState(IJSRuntime js)
 {
+    // Имена ключей, под которыми данные сохраняются в localStorage браузера.
     private const string ProductsKey = "simple-catalog-products";
     private const string UsersKey = "simple-catalog-users";
     private const string SessionKey = "simple-catalog-session";
@@ -20,12 +21,15 @@ public class AppState(IJSRuntime js)
 
     public async Task InitializeAsync()
     {
+        // Повторная инициализация не нужна при переходах между страницами.
         if (initialized) return;
 
+        // При первом запуске создаём стартовый каталог, при следующих — читаем сохранённый.
         Products = await ReadAsync<List<Product>>(ProductsKey) ?? SeedProducts();
         NormalizeProductImages();
         users = await ReadAsync<List<UserAccount>>(UsersKey) ??
         [
+            // Учётная запись администратора доступна сразу в демонстрационной версии.
             new UserAccount
             {
                 Name = "Администратор",
@@ -38,6 +42,7 @@ public class AppState(IJSRuntime js)
         await SaveAsync(ProductsKey, Products);
         await SaveAsync(UsersKey, users);
 
+        // В сессии хранится только почта текущего пользователя.
         var sessionEmail = await js.InvokeAsync<string?>("localStorage.getItem", SessionKey);
         CurrentUser = users.FirstOrDefault(user => user.Email.Equals(sessionEmail, StringComparison.OrdinalIgnoreCase));
         initialized = true;
@@ -47,6 +52,8 @@ public class AppState(IJSRuntime js)
     public async Task<(bool Success, string Message)> RegisterAsync(string name, string email, string password)
     {
         await InitializeAsync();
+
+        // Убираем случайные пробелы и приводим почту к единому виду.
         name = name.Trim();
         email = email.Trim().ToLowerInvariant();
 
@@ -56,6 +63,7 @@ public class AppState(IJSRuntime js)
         if (users.Any(user => user.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
             return (false, "Пользователь с такой почтой уже зарегистрирован.");
 
+        // Пароль сохраняется как SHA-256-хеш, а не как открытый текст.
         var account = new UserAccount { Name = name, Email = email, PasswordHash = Hash(password) };
         users.Add(account);
         await SaveAsync(UsersKey, users);
@@ -66,6 +74,8 @@ public class AppState(IJSRuntime js)
     public async Task<(bool Success, string Message)> LoginAsync(string email, string password)
     {
         await InitializeAsync();
+
+        // Пользователь считается найденным, если совпали почта и хеш пароля.
         var account = users.FirstOrDefault(user =>
             user.Email.Equals(email.Trim(), StringComparison.OrdinalIgnoreCase) &&
             user.PasswordHash == Hash(password));
@@ -85,6 +95,8 @@ public class AppState(IJSRuntime js)
     public async Task AddProductAsync(Product product)
     {
         await InitializeAsync();
+
+        // Новый идентификатор берётся после максимального существующего ID.
         product.Id = Products.Count == 0 ? 1 : Products.Max(item => item.Id) + 1;
         Products.Add(product);
         await SaveAsync(ProductsKey, Products);
@@ -108,16 +120,19 @@ public class AppState(IJSRuntime js)
 
     private async Task<T?> ReadAsync<T>(string key)
     {
+        // localStorage хранит строки, поэтому объект преобразуется из JSON.
         var json = await js.InvokeAsync<string?>("localStorage.getItem", key);
         return string.IsNullOrWhiteSpace(json) ? default : JsonSerializer.Deserialize<T>(json);
     }
 
+    // Любое изменение сразу записывается обратно в браузер.
     private Task SaveAsync<T>(string key, T value) =>
         js.InvokeVoidAsync("localStorage.setItem", key, JsonSerializer.Serialize(value)).AsTask();
 
     private static string Hash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 
+    // Начальные товары используются, пока администратор не изменил каталог.
     private static List<Product> SeedProducts() =>
     [
         new() { Id = 1, Name = "Настольная лампа", Category = "Для дома", Price = 2490, ImageUrl = "images/lamp.jpg", ImageAlt = "Настольная лампа на рабочем столе", Description = "Мягкий свет и три уровня яркости.", IsNew = true },
@@ -130,6 +145,7 @@ public class AppState(IJSRuntime js)
 
     private void NormalizeProductImages()
     {
+        // Этот словарь обновляет старые записи, которые были сохранены ещё с эмодзи.
         var images = new Dictionary<string, (string Url, string Alt)>(StringComparer.OrdinalIgnoreCase)
         {
             ["Настольная лампа"] = ("images/lamp.jpg", "Настольная лампа на рабочем столе"),
@@ -142,6 +158,7 @@ public class AppState(IJSRuntime js)
 
         foreach (var product in Products)
         {
+            // Для стандартных товаров всегда используем подходящие локальные фотографии.
             if (images.TryGetValue(product.Name, out var image))
             {
                 product.ImageUrl = image.Url;
@@ -149,6 +166,7 @@ public class AppState(IJSRuntime js)
             }
             else if (string.IsNullOrWhiteSpace(product.ImageUrl))
             {
+                // Пользовательскому товару без фото назначается нейтральная заглушка.
                 product.ImageUrl = "images/hero-box.jpg";
                 product.ImageAlt = "Фото товара";
             }

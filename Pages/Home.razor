@@ -3,6 +3,7 @@
 
 <PageTitle>Главная — ПростоМаркет</PageTitle>
 
+@* Главный слайдер: текст и фотография берутся из массива slides ниже. *@
 <section class="hero section">
     <div class="container">
         <div class="slider-card">
@@ -33,6 +34,7 @@
     </div>
 </section>
 
+@* На главной показываем только первые три товара из общего каталога. *@
 <section class="section products-section">
     <div class="container">
         <div class="section-heading">
@@ -57,6 +59,7 @@
     </div>
 </section>
 
+@* Короткий блок преимуществ магазина. *@
 <section class="section benefits-section">
     <div class="container benefits-grid">
         <div class="benefit"><span>✓</span><div><h3>Простой выбор</h3><p>Только полезные категории и понятные описания.</p></div></div>
@@ -66,13 +69,17 @@
 </section>
 
 @code {
+    // Индекс определяет, какой слайд сейчас видит пользователь.
     private int currentSlide;
+
+    // Слайды хранятся прямо в компоненте, отдельная база для них не требуется.
     private readonly Slide[] slides =
     [
         new("Новая коллекция", "Простые вещи для уютного дома", "Небольшая подборка предметов, которыми приятно пользоваться каждый день.", "images/hero-home.jpg", "Светлая уютная гостиная"),
         new("Для рабочего стола", "Порядок помогает сосредоточиться", "Лаконичные аксессуары для спокойной и продуктивной работы.", "images/hero-work.jpg", "Современное рабочее место с монитором"),
         new("Практичный выбор", "Берите нужное, пропускайте лишнее", "Понятный каталог, короткие описания и никаких сложных шагов.", "images/hero-box.jpg", "Открытая картонная коробка")
     ];
+    // Остаток от деления зацикливает переключение на первом и последнем слайдах.
     private void PreviousSlide() => currentSlide = (currentSlide - 1 + slides.Length) % slides.Length;
     private void NextSlide() => currentSlide = (currentSlide + 1) % slides.Length;
     private record Slide(string Label, string Title, string Text, string ImageUrl, string ImageAlt);

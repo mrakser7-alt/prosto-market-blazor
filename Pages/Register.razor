@@ -25,7 +25,10 @@
 
     private async Task RegisterAsync()
     {
+        // Валидация и сохранение пользователя выполняются в общем сервисе AppState.
         var result = await AppState.RegisterAsync(name, email, password);
+
+        // После успешной регистрации пользователь уже авторизован и попадает в кабинет.
         if (result.Success) Navigation.NavigateTo("account");
         else message = result.Message;
     }
