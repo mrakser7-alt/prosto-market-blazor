@@ -20,8 +20,11 @@ create table if not exists public.products (
     created_at timestamptz not null default now()
 );
 
+-- Служебные функции находятся в закрытой схеме и недоступны через Data API.
+create schema if not exists private;
+
 -- После регистрации автоматически создаётся строка профиля обычного пользователя.
-create or replace function public.handle_new_user()
+create or replace function private.handle_new_user()
 returns trigger
 language plpgsql
 security definer
@@ -41,10 +44,11 @@ $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
-for each row execute procedure public.handle_new_user();
+for each row execute procedure private.handle_new_user();
+
+revoke all on function private.handle_new_user() from public;
 
 -- Проверка роли вынесена в закрытую функцию, чтобы RLS-политики не были рекурсивными.
-create schema if not exists private;
 create or replace function private.is_admin()
 returns boolean
 language sql
